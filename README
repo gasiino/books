@@ -1,3 +1,15 @@
+----------------------------------------------------------------------------------------------------
+This is a fork from burakbayramli/books in case that repository is cleared in the future. 
+I was looking for data related to the book Introductory Time series with R by Copertwait & Metcalfe 
+and could not find their data anywhere online. 
+Especially the container ~pscowper and the website massey.ac.nz had not trace of it. 
+Thanks burakbayramli. 
+All the content of this folder is exactly as in the original burakbayramli repository. 
+If I look at a book's code I might add changes/fixes to make it runnable.
+
+gasiino
+----------------------------------------------------------------------------------------------------
+Original text by burakbayramli:
 
 Source codes for various books I collected over the years.
 
