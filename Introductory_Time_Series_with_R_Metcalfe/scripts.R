@@ -68,6 +68,7 @@ acf(a)
 acf(a^2)
 
 # Chapter 8, p162, calculation of fractionally differenced series etc
+#install.packages("fracdiff")
 library(fracdiff)
 set.seed(1)
 fds.sim <- fracdiff.sim(10000, ar = 0.9, d = 0.4)
@@ -95,7 +96,7 @@ plot(as.ts(x), ylab = "x")
 acf(x) ; acf(y) ; acf(z)
 
 # Chapter 9, p184, spectrum of broken motor
-www <- "http://www.massey.ac.nz/~pscowper/ts/imotor.txt"
+www <- "imotor.txt"  #"http://www.massey.ac.nz/~pscowper/ts/imotor.txt"
 imotor.dat <- read.table(www, header = T)
 attach (imotor.dat)
 xg.spec <- spectrum(good,   span = 9)
@@ -109,12 +110,13 @@ sd(good)
 sd(broken)
 
 # Chapter 9, p186, plots for excavator series
-www <- "http://www.massey.ac.nz/~pscowper/ts/zdd.txt"
+www <- "zdd.txt"  #"http://www.massey.ac.nz/~pscowper/ts/zdd.txt"
 zdotdot.dat <- read.table(www, header = T)
 attach (zdotdot.dat)
-www <- "http://www.massey.ac.nz/~pscowper/ts/vibdoswt.txt"
-wt.dat <- read.table (www, header = T)
-attach (wt.dat)
+######## this file "vibdoswt.txt" is not available. skipping it.
+#www <- "vibdoswt.txt" #"http://www.massey.ac.nz/~pscowper/ts/vibdoswt.txt"
+#wt.dat <- read.table (www, header = T)
+#attach (wt.dat)
 acceln.spec <- spectrum (Accelnz, span = sqrt(2 * length(Accelnz)))
 Frequ <- 200 * acceln.spec$freq
 Sord <- 2 * acceln.spec$spec / 200
@@ -156,7 +158,7 @@ lines(FreH, Gemp, lty = "dashed")
 lines(FreH, Gar, lty = "dotted")
 
 # Chapter 10, p206-207, tugboat series, plot in Figure 10.3 etc
-www <- "http://www.massey.ac.nz/~pscowper/ts/leg4.dat"
+www <- "leg4.dat"  #"http://www.massey.ac.nz/~pscowper/ts/leg4.dat"
 tug.dat <- read.table(www, header = T)
 attach(tug.dat)
 Heave.spec <- spectrum( Heave, span = sqrt( length(Heave) ), 
@@ -172,6 +174,11 @@ plot(Heave.spec$freq, G, xlab="frequency Hz", ylab="Gain", type="l")
 
 
 # Chapter 12, p234, Kalman filter, plot in Figure 12.1, etc
+################# sspir is not available in cran but it's in github cran/sspir
+#install.packages("devtools")
+#library(devtools)
+#install_github("cran/sspir")
+par(mfcol = c(1,1))
 library(sspir)
 set.seed(1)
 Plummet.dat <- 20 + 2*rnorm(20) + c(rep(0,10), rep(-10,10))
@@ -219,7 +226,7 @@ plot(m1.f$m[,2], type='l')
 
 # Chapter 12, p241-242, Murray River series, Figures 12.5 and 12.6
 library(sspir)
-www <- 'http://www.massey.ac.nz/~pscowper/ts/Murray.txt'
+www <- "Murray.txt"  #'http://www.massey.ac.nz/~pscowper/ts/Murray.txt'
 Salt.dat <- read.table(www, header=T) ; attach(Salt.dat)
 n <- 81 ; Time <- 1:n
 SIN  <- sin(2 * pi * Time /12)[-1]
@@ -299,6 +306,7 @@ for (tt in 1:n) {
     Kfilt.m[tt,1] <- m[1,1]
     Kfilt.m[tt,2] <- m[2,1]
   }
+par(mfcol=c(2,1))
 plot(Kfilt.m[1:n, 1])
 plot(Kfilt.m[1:n, 2])
 

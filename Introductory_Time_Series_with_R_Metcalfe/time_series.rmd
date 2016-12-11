@@ -1,0 +1,209 @@
+---
+title: "time_series"
+author: "gasiino"
+date: "1 December 2016"
+output: 
+  html_document: 
+    keep_md: yes
+  pdf_document: 
+    keep_tex: yes
+  word_document: 
+    keep_md: yes
+---
+
+
+```{r head}
+library(reshape2)
+library(ggplot2)
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+## function to create a data.frame from a timeseries object giving it the column time
+getplottable <- function(tsObject){
+  tsTimes <- seq(attr(tsObject,"tsp")[1], attr(tsObject,"tsp")[2], by=1/attr(tsObject,"tsp")[3])
+  tsDF <- data.frame(x=tsObject, time=tsTimes)
+  tsDF
+}
+
+```
+
+```{r AP}
+data("AirPassengers")
+AP <- AirPassengers
+AP
+class(AP)
+start(AP)
+end(AP)
+frequency(AP)
+plot(AP,ylab="Passengers (1000s)")
+qplot(AP) + scale_x_continuous()
+
+str(AP)
+rownames(AP)
+summary(AP)
+AP
+
+# APtime <-attr(AP,"tsp")
+# APtimes <- seq(APtime[1], APtime[2], by=1/APtime[3])
+# APdf <- data.frame(x=AP, time=APtimes)
+
+ggplot(data=getplottable(AP), aes(time, x)) +
+  geom_line() + scale_y_continuous() #+ scale_continuous()  #+
+  #?scale_x_continuous(xlab) +
+  #scale_y_continuous(ylab) +
+  #ggtitle(title)
+
+# ?attr
+# attributes(AP)
+aggregate(AP)
+layout(1:2)
+plot(aggregate(AP))
+boxplot(AP ~ cycle(AP))
+layout(1:1)
+
+p1<-ggplot(data=getplottable(aggregate(AP)), aes(time, x)) + 
+  geom_line() + 
+  #scale_x_continuous() + 
+  scale_y_continuous() #+ scale_continuous() #+
+
+df <- data.frame(time=getplottable(AP)$time,x=getplottable(AP)$x,y=getplottable(cycle(AP))$x) 
+p2<-ggplot(data=df, aes(factor(y),x)) +
+  geom_boxplot() + scale_y_continuous() #+ 
+  #scale_x_continuous()#+ scale_continuous() #+
+
+
+multiplot(p1,p2)
+```
+
+```{r unemployment}
+www <- "Maine.dat"
+
+Maine.month <- read.table(www, header = TRUE)
+attach(Maine.month)
+class(Maine.month)
+
+Maine.month.ts <- ts(Maine.month,start=c(1996,1),freq=12)
+Maine.year.ts <- aggregate(Maine.month.ts)/12
+
+layout(matrix(c(1,2),nrow=1,ncol=2))
+plot(Maine.month.ts, ylab="unemployed %")
+plot(Maine.year.ts, ylab="unemployed %")
+layout(1:1)
+p1<-ggplot(data=getplottable(Maine.month.ts), aes(time, unemploy)) + geom_line() + ggtitle("Maine.month.ts") + ylab("unemployed %")
+p2<-ggplot(data=getplottable(Maine.year.ts), aes(time, unemploy)) + geom_line() + ggtitle("Maine.year.ts") + ylab("unemployed %")
+
+multiplot(p1,p2,cols=2)
+
+Maine.Feb <- window(Maine.month.ts,start=c(1996,2),freq=TRUE)
+Maine.Aug <- window(Maine.month.ts,start=c(1996,8),freq=TRUE)
+Feb.ratio <- mean(Maine.Feb) / mean(Maine.month.ts)
+Aug.ratio <- mean(Maine.Aug) / mean(Maine.month.ts)
+
+Feb.ratio
+Aug.ratio
+
+www <- "USunemp.dat"
+US.month <- read.table(www,header = TRUE)
+attach(US.month)
+US.month.ts <- ts(US.month,start=c(1996,1),end=c(2006,10),freq=12)
+
+plot(US.month.ts, ylab="unemployed %")
+
+ggplot(data=getplottable(US.month.ts), aes(time, USun)) + geom_line() + ggtitle("US.month.ts") + ylab("unemployed %")
+
+```
+
+
+```{r multiple}
+www <- "cbe.dat"
+
+CBE <- read.table(www, header = TRUE)
+CBE[1:4,]
+
+class(CBE)
+
+Elec.ts <- ts(CBE[,3],start=1958,freq=12)
+Beer.ts <- ts(CBE[,2],start=1958,freq=12)
+Choc.ts <- ts(CBE[,1],start=1958,freq=12)
+
+plot(cbind(Elec.ts,Beer.ts,Choc.ts))
+
+
+p1<-ggplot(data=getplottable(Elec.ts), aes(time, x)) + geom_line() + ggtitle("Elec.ts") + scale_y_continuous()
+p2<-ggplot(data=getplottable(Beer.ts), aes(time, x)) + geom_line() + ggtitle("Beer.ts") + scale_y_continuous()
+p3<-ggplot(data=getplottable(Choc.ts), aes(time, x)) + geom_line() + ggtitle("Choc.ts") + scale_y_continuous()
+
+multiplot(p1,p2,p3,cols=1)
+
+AP.elec <- ts.intersect(AP,Elec.ts)
+start(AP.elec)
+end(AP.elec)
+AP.elec[1:3,]
+
+AP <- AP.elec[,1]
+Elec <- AP.elec[,2]
+
+layout(1:2)
+plot(AP,main="",ylab="Air passengers (1000)")
+plot(Elec,main="",ylab="Electricity production (MWh)")
+layout(1:1)
+
+p1<-ggplot(data=getplottable(AP), aes(time, x)) + geom_line() + ggtitle("AP") + ylab("Air passengers (1000)") + scale_y_continuous()
+p2<-ggplot(data=getplottable(Elec), aes(time, x)) + geom_line() + ggtitle("Elec") + ylab("Electricity production (MWh)") + scale_y_continuous()
+
+multiplot(p1,p2,cols=1)
+
+plot(as.vector(AP),as.vector(Elec),xlab="Air passengers (1000)",ylab="Electricity production (MWh)")
+abline(reg=lm(Elec~AP))
+
+df <- merge(getplottable(AP),getplottable(Elec),by="time")
+names(df) <- c("time","ap","elec")
+ggplot(data=df,aes(ap,elec)) +geom_point() +stat_smooth(method = "lm", col = "red") + xlab("Air passengers (1000)") + ylab("Electricity production (MWh)")
+
+
+```
+
+
